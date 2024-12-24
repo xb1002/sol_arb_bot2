@@ -338,7 +338,7 @@ async function monitor(params:monitorParams) {
             logger.info(`${pair2.symbol} to ${pair1.symbol} price: ${sellPrice}`)
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
             // 计算jito tip
-            let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice)*trade_main*jitoFeePercentage));
+            let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1-partformFeeBps)*trade_main*jitoFeePercentage));
             
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
