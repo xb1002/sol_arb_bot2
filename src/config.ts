@@ -10,7 +10,7 @@ export const normalConfig = { // 一般配置
     maxTolerantSlotNum: 3, // 最大可接受的报价contextSlot与latestSlot的差距
     maxTolerantSlotDiffNum: 3, // 最大可接受的两个报价的contextSlot的差距
     partformFeeBps: 20, // 平台手续费,单位为0.01%
-    minProfitBps: 10, // 最小利润，单位为0.01%
+    minProfitBps: 30, // 最小利润，单位为0.01%
     minJitoTip: 0.0001 * LAMPORTS_PER_SOL, // 最小jito tip
     jitoFeePercentage: 0.1, // jito手续费百分比
     computeUnitBudget: 199999, // 计算单元预算
@@ -22,8 +22,8 @@ export const submitTxMethodConfig = { // 提交交易方法配置
 
 export const judgementConfig = { // 判断条件配置
     ifJudgeSamePool: true, // 是否判断是否为同一个池子
-    ifJudgeSlotLatency: true, // 是否判断slot延迟，如果是则需要设置 maxTolerantSlotNum
-    ifJudgeSlotDiffOfQuotes:true, // 是否判断两个报价的contextSlot的差距，如果是则需要设置 maxTolerantSlotDiffNum
+    ifJudgeSlotLatency: false, // 是否判断slot延迟，如果是则需要设置 maxTolerantSlotNum
+    ifJudgeSlotDiffOfQuotes:false, // 是否判断两个报价的contextSlot的差距，如果是则需要设置 maxTolerantSlotDiffNum
 };
 
 export const priorityFeeConfig = { // 每个优先级的最大费用，单位为microLamport

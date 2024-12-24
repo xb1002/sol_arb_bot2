@@ -299,10 +299,10 @@ async function monitor(params:monitorParams) {
     }
     try {
         let startRequestQuoteTime = Date.now();
-        const [quote0Resp ,quote1Resp] = await Promise.all([
-            jupCon.quoteGet(pair1_to_pair2),
-            jupCon.quoteGet(pair2_to_pair1)
-        ]);
+        const quote0Resp = await jupCon.quoteGet(pair1_to_pair2);
+        pair2_to_pair1.amount = Math.floor(Number(quote0Resp?.outAmount));
+        pair2_to_pair1.swapMode = QuoteGetSwapModeEnum.ExactIn;
+        const quote1Resp = await jupCon.quoteGet(pair2_to_pair1);
         logger.debug(`${pair1.symbol}-${pair2.symbol} get quote cost: ${Date.now() - startRequestQuoteTime}ms`);
         // 检查是否是同一个池
         if (config.judgementConfig.ifJudgeSamePool) {
@@ -330,15 +330,12 @@ async function monitor(params:monitorParams) {
             }   
         }
         // 
-        let buyPrice = Number(quote0Resp?.outAmount) / Number(quote0Resp?.inAmount);
-        let sellPrice = Number(quote1Resp?.inAmount) / Number(quote1Resp?.outAmount);
-        if (sellPrice/buyPrice-1 > minProfitBps + partformFeeBps) {
+        let profitRatio = Number(quote1Resp?.outAmount)/Number(quote0Resp?.inAmount)-1;
+        if (profitRatio > minProfitBps) {
             // 通过检查，开始交易
-            logger.info(`${pair1.symbol} to ${pair2.symbol} price: ${buyPrice}`)
-            logger.info(`${pair2.symbol} to ${pair1.symbol} price: ${sellPrice}`)
-            logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
+            logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} profitRatio: ${profitRatio}`);
             // 计算jito tip
-            let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1-partformFeeBps)*trade_main*jitoFeePercentage));
+            let jitoTip = Math.max(minJitoTip,Math.floor((profitRatio)*trade_main*jitoFeePercentage));
             
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
@@ -364,7 +361,7 @@ async function monitor(params:monitorParams) {
                 let ixs : TransactionInstruction[] = [];
                 let cu_ixs : TransactionInstruction[] = [];
                 let cu_num = config.normalConfig.computeUnitBudget;
-                let priorfee = lib.selectPriorityFee(priorityFee as lib.priorityFeeResponse,lib.calculatePriorityLevel(sellPrice/buyPrice-1));
+                let priorfee = lib.selectPriorityFee(priorityFee as lib.priorityFeeResponse,lib.calculatePriorityLevel(profitRatio));
 
                 // 1. setup instructions
                 const setupInstructions = instructions.setupInstructions.map(instructionFormat);
