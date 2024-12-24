@@ -22,8 +22,8 @@ export const submitTxMethodConfig = { // 提交交易方法配置
 
 export const judgementConfig = { // 判断条件配置
     ifJudgeSamePool: true, // 是否判断是否为同一个池子
-    ifJudgeSlotLatency: true, // 是否判断slot延迟，如果是则需要设置 maxTolerantSlotNum
-    ifJudgeSlotDiffOfQuotes:true, // 是否判断两个报价的contextSlot的差距，如果是则需要设置 maxTolerantSlotDiffNum
+    ifJudgeSlotLatency: false, // 是否判断slot延迟，如果是则需要设置 maxTolerantSlotNum
+    ifJudgeSlotDiffOfQuotes:false, // 是否判断两个报价的contextSlot的差距，如果是则需要设置 maxTolerantSlotDiffNum
 };
 
 export const priorityFeeConfig = { // 每个优先级的最大费用，单位为microLamport

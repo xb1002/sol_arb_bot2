@@ -330,15 +330,14 @@ async function monitor(params:monitorParams) {
             }   
         }
         // 
-        let buyPrice = Number(quote0Resp?.outAmount) / Number(quote0Resp?.inAmount);
-        let sellPrice = Number(quote1Resp?.inAmount) / Number(quote1Resp?.outAmount);
-        if (sellPrice/buyPrice-1 > minProfitBps + partformFeeBps) {
+        let buyPrice = Number(quote0Resp?.inAmount) / Number(quote0Resp?.outAmount);
+        let sellPrice = Number(quote1Resp?.outAmount) / Number(quote1Resp?.inAmount);
+        logger.debug(`${pair1.symbol}-${pair2.symbol} buyPrice: ${buyPrice}, sellPrice: ${sellPrice}`);
+        if (sellPrice/buyPrice-1 > minProfitBps) {
             // 通过检查，开始交易
-            logger.info(`${pair1.symbol} to ${pair2.symbol} price: ${buyPrice}`)
-            logger.info(`${pair2.symbol} to ${pair1.symbol} price: ${sellPrice}`)
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
             // 计算jito tip
-            let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1-partformFeeBps)*trade_main*jitoFeePercentage));
+            let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1)*trade_main*jitoFeePercentage));
             
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
