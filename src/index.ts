@@ -62,7 +62,7 @@ setInterval(() => {
     lib.getMainBalance(ATA,pubCon).then((res) => {
         mainBalance = res;
     }).catch((error) => {
-        logger.error(`获取余额失败: ${error}`);
+        logger.error(`get balance error: ${error}`);
     });
 }, config.IntervalConfig.balanceInterval);
 
@@ -80,7 +80,7 @@ setInterval(() => {
             blockhash_list.shift();
         }
     }).catch((error) => {
-        logger.error(`获取blockhash失败: ${error}`);
+        logger.error(`get blockhash error: ${error}`);
     });
 }, config.IntervalConfig.blockhashInterval);
 
@@ -97,7 +97,7 @@ setInterval(() => {
     con.getSlot().then((res) => {
         latestSlot = res;
     }).catch((error) => {
-        logger.error(`获取latestSlot失败: ${error}`);
+        logger.error(`get latestSlot error: ${error}`);
     });
 }, config.IntervalConfig.getSlotInterval);
 
@@ -109,7 +109,7 @@ setInterval(() => {
     lib.getPriorityFee(RPC).then((res) => {
         priorityFee = res;
     }).catch((error) => {
-        logger.error(`获取优先费失败: ${error}`);
+        logger.error(`get priorityFee error: ${error}`);
     });
 }, config.IntervalConfig.priorityFeeInterval);
 
@@ -303,7 +303,7 @@ async function monitor(params:monitorParams) {
             jupCon.quoteGet(pair1_to_pair2),
             jupCon.quoteGet(pair2_to_pair1)
         ]);
-        logger.debug(`${pair1.symbol}-${pair2.symbol} 获取交易对信息耗时: ${Date.now() - startRequestQuoteTime}ms`);
+        logger.debug(`${pair1.symbol}-${pair2.symbol} get quote cost: ${Date.now() - startRequestQuoteTime}ms`);
         // 检查是否是同一个池
         if (config.judgementConfig.ifJudgeSamePool) {
             if (quote0Resp?.routePlan[0].swapInfo.ammKey === quote1Resp?.routePlan[0].swapInfo.ammKey) {
@@ -359,7 +359,7 @@ async function monitor(params:monitorParams) {
             try {
                 let startGetSwapInstructionTime = Date.now();
                 let instructions = await jupCon.swapInstructionsPost({ swapRequest: swapData })
-                logger.debug(`${pair1.symbol}-${pair2.symbol} 获取swap指令耗时: ${Date.now() - startGetSwapInstructionTime}ms`);
+                logger.debug(`${pair1.symbol}-${pair2.symbol} get swap instructions cost: ${Date.now() - startGetSwapInstructionTime}ms`);
 
                 let ixs : TransactionInstruction[] = [];
                 let cu_ixs : TransactionInstruction[] = [];
@@ -440,11 +440,11 @@ async function monitor(params:monitorParams) {
                         await Promise.all(promises);
                     }
                 } catch (error) {
-                    logger.error(`${pair1.symbol}-${pair2.symbol} 提交交易失败: ${error}`);
+                    logger.error(`${pair1.symbol}-${pair2.symbol} submit tx error: ${error}`);
                 }
 
             } catch (error) {
-                logger.error(`${pair1.symbol}-${pair2.symbol} 构建交易失败: ${error}`);
+                logger.error(`${pair1.symbol}-${pair2.symbol} build tx error: ${error}`);
             }         
         }
     } catch (error) {
