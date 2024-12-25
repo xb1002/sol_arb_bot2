@@ -350,9 +350,22 @@ async function monitor(params:monitorParams) {
         logger.debug(`${pair1.symbol}-${pair2.symbol} buyPrice: ${buyPrice}, sellPrice: ${sellPrice}`);
         logger.debug(`${pair1.symbol}-${pair2.symbol} quote0outAmount: ${quote0Resp?.outAmount}, quote1inAmount: ${quote1Resp?.inAmount}`);
         logger.debug(`${pair1.symbol}-${pair2.symbol} profitRatio: ${sellPrice/buyPrice-1}`);
+        logger.debug(`${pair1.symbol}-${pair2.symbol} latestSlot: ${latestSlot}, quote0 slot: ${quote0Resp?.contextSlot}, quote1 slot: ${quote1Resp?.contextSlot}`);
         if (sellPrice/buyPrice-1 > minProfitBps) {
             // 通过检查，开始交易
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
+            
+            // 获取blockheight
+            if (config.normalConfig.ifCheckBlockHeight){
+                try {
+                    let startGetBlockHeightTime = Date.now();
+                    let blockHeight = await con.getBlockHeight();
+                    logger.debug(`${pair1.symbol}-${pair2.symbol} blockHeight: ${blockHeight}, get blockHeight cost: ${Date.now() - startGetBlockHeightTime}ms`);
+                } catch (error) {
+                    logger.error(`${pair1.symbol}-${pair2.symbol} get blockHeight error: ${error}`);
+                }
+            }
+
             // 计算jito tip
             let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1)*trade_main*jitoFeePercentage));
             logger.debug(`${pair1.symbol}-${pair2.symbol} jitoTip: ${jitoTip}`);
