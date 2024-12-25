@@ -16,20 +16,35 @@ import os from 'os';
 // -------------------------------------------------
 // 日志配置
 const logger = winston.createLogger({
-    level: "info",
-    format: winston.format.simple(),
+    level: config.normalConfig.loggerLevel,
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} ${level}: ${message}`;
+        })
+    ),
     transports: [
-        new winston.transports.Console({level: "debug"}), // 控制台输出
+        new winston.transports.Console(),
         new winston.transports.File({
             filename: "logs/error.log",
             level: "error",
         }),
-        new winston.transports.File({ filename: "logs/combined.log" }),
+        new winston.transports.File({ filename: "logs/info.log", level: "info" }),
+        new winston.transports.File({ filename: "logs/combined.log", level: "debug" }),
     ],
 });
 const tradeLogger = winston.createLogger({
     level: "info",
-    format: winston.format.simple(),
+    format: winston.format.combine(
+        winston.format.timestamp({
+            format: 'YYYY-MM-DD HH:mm:ss',
+        }),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `${timestamp} ${level}: ${message}`;
+        })
+    ),
     transports: [
         new winston.transports.Console(),
         new winston.transports.File({ filename: "logs/trade.log" }),
@@ -333,12 +348,15 @@ async function monitor(params:monitorParams) {
         let buyPrice = Number(quote0Resp?.inAmount) / Number(quote0Resp?.outAmount);
         let sellPrice = Number(quote1Resp?.outAmount) / Number(quote1Resp?.inAmount);
         logger.debug(`${pair1.symbol}-${pair2.symbol} buyPrice: ${buyPrice}, sellPrice: ${sellPrice}`);
+        logger.debug(`${pair1.symbol}-${pair2.symbol} quote0outAmount: ${quote0Resp?.outAmount}, quote1inAmount: ${quote1Resp?.inAmount}`);
+        logger.debug(`${pair1.symbol}-${pair2.symbol} profitRatio: ${sellPrice/buyPrice-1}`);
         if (sellPrice/buyPrice-1 > minProfitBps) {
             // 通过检查，开始交易
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
             // 计算jito tip
             let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1)*trade_main*jitoFeePercentage));
-            
+            logger.debug(`${pair1.symbol}-${pair2.symbol} jitoTip: ${jitoTip}`);
+
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
             mergedQuoteResp.outputMint = (quote1Resp as QuoteResponse).outputMint;
@@ -456,16 +474,16 @@ async function monitor(params:monitorParams) {
 let wait = (ms:number) => new Promise((resolve) => setTimeout(resolve,ms));
 let waitTime = config.normalConfig.waitTimePerRound;
 let trade_pairs = config.trade_pairs;
-let {pair1,timeSpan,pairNum} = trade_pairs;
+let {pair1,timeSpan,startNum,pairNum} = trade_pairs;
 var pair2s:config.TradePair[] = [];
 if (trade_pairs.pair2s.length > 0) {
     pair2s = trade_pairs.pair2s;
 } else {
-    pair2s = await lib.getPairs({timeSpan:timeSpan,pairNum:pairNum});
+    pair2s = await lib.getPairs({timeSpan:timeSpan,startNum:startNum,pairNum:pairNum});
     // 每隔一段时间获取一次交易对
     setInterval(async () => {
         try {
-            pair2s = await lib.getPairs({timeSpan:timeSpan,pairNum:pairNum});
+            pair2s = await lib.getPairs({timeSpan:timeSpan,startNum:startNum,pairNum:pairNum});
         } catch (err) {
             logger.error(`getPairs error, use last pairs...`)
         }
@@ -483,11 +501,10 @@ async function main(num:number) {
     })
     console.log(`waiting for ${waitTime}ms...`)
     await wait(waitTime);
+    console.log('start next round...')
     main((num+1)%pair2s.length);
 }
 
-main(num).then(() => {
-    console.log('start next round...')
-}).catch((err) => {
-    logger.error(err);
+main(num).catch((error) => {
+    logger.error(`main error: ${error}`);
 });

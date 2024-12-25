@@ -1,6 +1,7 @@
 import { LAMPORTS_PER_SOL,Commitment } from "@solana/web3.js";
 
 export const normalConfig = { // 一般配置
+    loggerLevel: "debug", // 日志级别
     commitment: "confirmed" as Commitment, // 交易确认级别
     waitTimePerRound: 0.35 * 1000, // 每一轮间隔时间
     txMutilpler : 3, // 当发现套利机会时提出交易的次数
@@ -49,7 +50,7 @@ export const IntervalConfig = { // 间隔时间配置
     wsPingInterval: 1000 * 10, // ws心跳间隔时间
     wsReloadInterval: 1000 * 60 * 30, // ws重新加载间隔时间，防止ws错误时程序停止运行
     adjustAddressLookupTableInterval: 1000 * 3, // 调整地址查找表间隔时间,每次调整一个，所以时间间隔不宜过长
-    updateTradePairsInterval: 1000 * 60 * 10, // 更新交易对间隔时间
+    updateTradePairsInterval: 1000 * 60 * 5, // 更新交易对间隔时间
 }
 
 export const JitoTipAccounts = [
@@ -80,5 +81,6 @@ export const trade_pairs = {
 
     ] as TradePair[], //如果添加，则不会自动更新币对
     timeSpan: "24h", //只能是 1m 5m 1h 6h 24h
+    startNum: 0, // 从第几个币对开始
     pairNum: 5,
 }

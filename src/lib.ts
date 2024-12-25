@@ -145,17 +145,18 @@ export async function sendTxToBundle(tx:VersionedTransaction,bundle_api:string,l
 // 从gmgnai获取交易对
 interface getPairsParams {
     timeSpan: string;
+    startNum: number;
     pairNum: number;
 }
 export async function getPairs(params:getPairsParams) : Promise<TradePair[]> {
-    const {timeSpan,pairNum} = params;
+    const {timeSpan,startNum,pairNum} = params;
     try {
         const url = `http://47.237.120.213:9488/defi/quotation/v1/rank/sol/swaps/${timeSpan}?orderby=volume&direction=desc&filters[]=renounced&filters[]=frozen&filters[]=burn&filters[]=distribed`
         let resp = await axios.get(url);
         if (resp.data.code != 0) {
             throw new Error(`getPairs error, code: ${resp.data.code}, msg: ${resp.data.msg}`)
         } else {
-            let result = resp.data.data.rank.slice(0,pairNum).map((pair:any) => {
+            let result = resp.data.data.rank.slice(startNum,startNum+pairNum).map((pair:any) => {
                 return {
                     symbol: pair.symbol,
                     mint: pair.address
