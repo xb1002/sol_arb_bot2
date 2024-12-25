@@ -110,6 +110,7 @@ setInterval(() => {
 // 从链上获取slot
 setInterval(() => {
     con.getSlot().then((res) => {
+        logger.debug(`latestSlotByGet ${res}, latestSlotByLocal ${latestSlot}`);
         latestSlot = res;
     }).catch((error) => {
         logger.error(`get latestSlot error: ${error}`);
@@ -354,17 +355,6 @@ async function monitor(params:monitorParams) {
         if (sellPrice/buyPrice-1 > minProfitBps) {
             // 通过检查，开始交易
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
-            
-            // 获取blockheight
-            if (config.normalConfig.ifCheckBlockHeight){
-                try {
-                    let startGetBlockHeightTime = Date.now();
-                    let blockHeight = await con.getBlockHeight();
-                    logger.debug(`${pair1.symbol}-${pair2.symbol} blockHeight: ${blockHeight}, get blockHeight cost: ${Date.now() - startGetBlockHeightTime}ms`);
-                } catch (error) {
-                    logger.error(`${pair1.symbol}-${pair2.symbol} get blockHeight error: ${error}`);
-                }
-            }
 
             // 计算jito tip
             let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1)*trade_main*jitoFeePercentage));

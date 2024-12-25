@@ -10,7 +10,6 @@ export const normalConfig = { // 一般配置
     tradePercentageOfBalance: 0.3, // 交易百分比
     maxTolerantSlotNum: 3, // 最大可接受的报价contextSlot与latestSlot的差距
     maxTolerantSlotDiffNum: 3, // 最大可接受的两个报价的contextSlot的差距
-    ifCheckBlockHeight: false, // 是否检查区块高度,用于调试检查真实交易区块与发现机会时的区块高度差距如何,正常运行时不需要开启
     partformFeeBps: 20, // 平台手续费,单位为0.01%
     minProfitBps: 10, // 最小利润，单位为0.01%
     minJitoTip: 0.0001 * LAMPORTS_PER_SOL, // 最小jito tip
