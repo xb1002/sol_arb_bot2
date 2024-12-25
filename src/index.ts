@@ -356,10 +356,11 @@ async function monitor(params:monitorParams) {
         if (sellPrice/buyPrice-1 > minProfitBps) {
             // 通过检查，开始交易
             logger.info(`${pair1.symbol} -> ${pair2.symbol} -> ${pair1.symbol} price difference: ${sellPrice/buyPrice}`)
+            logger.info(`${pair1.symbol}-${pair2.symbol} latestSlot: ${latestSlot}, quote0 slot: ${quote0Resp?.contextSlot}, quote1 slot: ${quote1Resp?.contextSlot}`);
 
             // 计算jito tip
             let jitoTip = Math.max(minJitoTip,Math.floor((sellPrice/buyPrice-1)*trade_main*jitoFeePercentage));
-            logger.debug(`${pair1.symbol}-${pair2.symbol} jitoTip: ${jitoTip}`);
+            logger.info(`${pair1.symbol}-${pair2.symbol} jitoTip: ${jitoTip}`);
 
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
@@ -380,7 +381,7 @@ async function monitor(params:monitorParams) {
             try {
                 let startGetSwapInstructionTime = Date.now();
                 let instructions = await jupCon.swapInstructionsPost({ swapRequest: swapData })
-                logger.debug(`${pair1.symbol}-${pair2.symbol} get swap instructions cost: ${Date.now() - startGetSwapInstructionTime}ms`);
+                logger.info(`${pair1.symbol}-${pair2.symbol} get swap instructions cost: ${Date.now() - startGetSwapInstructionTime}ms`);
 
                 let ixsRpc : TransactionInstruction[] = [];
                 let ixsBundle: TransactionInstruction[] = [];
@@ -410,8 +411,8 @@ async function monitor(params:monitorParams) {
                 })
                 cu_ixs.push(computeUnitPriceInstruction);
                 // 合并cu_ixs
-                ixsRpc = ixsRpc.concat(cu_ixs);
-                ixsBundle = ixsBundle.concat(cu_ixs);
+                ixsRpc = cu_ixs.concat(ixsRpc);
+                ixsBundle = cu_ixs.concat(ixsBundle);
 
                 if (ifsendTxToBundle) {
                     // 5. 添加jito tip

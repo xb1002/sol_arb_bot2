@@ -7,7 +7,7 @@ export const normalConfig = { // 一般配置
     txMutilpler : 2, // 当发现套利机会时提出交易的次数
     maxAddressLookupTableNum: 200, // 保存最大地址查找表数量
     directRoute: true, // 是否直接路由
-    tradePercentageOfBalance: 0.9, // 交易百分比
+    tradePercentageOfBalance: 0.98, // 交易百分比
     maxTolerantSlotNum: 3, // 最大可接受的报价contextSlot与latestSlot的差距
     maxTolerantSlotDiffNum: 3, // 最大可接受的两个报价的contextSlot的差距
     partformFeeBps: 20, // 平台手续费,单位为0.01%
@@ -29,15 +29,15 @@ export const judgementConfig = { // 判断条件配置
 };
 
 export const priorityFeeConfig = { // 每个优先级的最大费用，单位为microLamport
-    maxFeeOfExtreme: 1000000,
-    maxFeeOfHigh: 666666,
-    maxFeeOfMedium: 250000,
-    maxFeeOfLow: 99999
+    maxFeeOfExtreme: 199999,
+    maxFeeOfHigh: 99999,
+    maxFeeOfMedium: 66666,
+    maxFeeOfLow: 12345
 };
 export const priorityFeeLevelThreshold = { // 优先级阈值
-    extreme: 0.1,
-    high: 0.05,
-    medium: 0.02,
+    extreme: 0.05,
+    high: 0.02,
+    medium: 0.01,
     low: 0,
 };
 
