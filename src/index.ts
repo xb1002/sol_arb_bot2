@@ -280,6 +280,7 @@ let minJitoTip = config.normalConfig.minJitoTip;
 let trade_main = mainBalance * config.normalConfig.tradePercentageOfBalance;
 let jitoFeePercentage = config.normalConfig.jitoFeePercentage;
 let ifsendTxToBundle = config.submitTxMethodConfig.ifsendTxToBundle;
+let ifsendTxToBothRpcAndBundle = config.submitTxMethodConfig.ifsendTxToBothRpcAndBundle;
 const JitoTipAccounts = config.JitoTipAccounts;
 const BundleApis = config.BundleApis;
 
@@ -381,18 +382,21 @@ async function monitor(params:monitorParams) {
                 let instructions = await jupCon.swapInstructionsPost({ swapRequest: swapData })
                 logger.debug(`${pair1.symbol}-${pair2.symbol} get swap instructions cost: ${Date.now() - startGetSwapInstructionTime}ms`);
 
-                let ixs : TransactionInstruction[] = [];
+                let ixsRpc : TransactionInstruction[] = [];
+                let ixsBundle: TransactionInstruction[] = [];
                 let cu_ixs : TransactionInstruction[] = [];
                 let cu_num = config.normalConfig.computeUnitBudget;
                 let priorfee = lib.selectPriorityFee(priorityFee as lib.priorityFeeResponse,lib.calculatePriorityLevel(sellPrice/buyPrice-1));
 
                 // 1. setup instructions
                 const setupInstructions = instructions.setupInstructions.map(instructionFormat);
-                ixs = ixs.concat(setupInstructions);
+                ixsRpc = ixsRpc.concat(setupInstructions);
+                ixsBundle = ixsBundle.concat(setupInstructions);
 
                 // 2. swap instructions
                 const swapInstructions = instructionFormat(instructions.swapInstruction);
-                ixs.push(swapInstructions);
+                ixsRpc.push(swapInstructions);
+                ixsBundle.push(swapInstructions);
 
                 // 3. 调用computeBudget设置cu
                 const computeUnitLimitInstruction = ComputeBudgetProgram.setComputeUnitLimit({
@@ -406,7 +410,8 @@ async function monitor(params:monitorParams) {
                 })
                 cu_ixs.push(computeUnitPriceInstruction);
                 // 合并cu_ixs
-                ixs = cu_ixs.concat(ixs);
+                ixsRpc = ixsRpc.concat(cu_ixs);
+                ixsBundle = ixsBundle.concat(cu_ixs);
 
                 if (ifsendTxToBundle) {
                     // 5. 添加jito tip
@@ -415,7 +420,7 @@ async function monitor(params:monitorParams) {
                         toPubkey: new PublicKey(JitoTipAccounts[Math.floor(Math.random()*JitoTipAccounts.length)]),
                         lamports: jitoTip,
                     })
-                    ixs.push(tipInstruction);
+                    ixsBundle.push(tipInstruction);
                 }
 
                 const addressLookupTableAccounts = await Promise.all(
@@ -433,31 +438,52 @@ async function monitor(params:monitorParams) {
                 );
 
                 // v0 tx
-                let txs : VersionedTransaction[] = [];
+                let txsRpc : VersionedTransaction[] = [];
+                let txsBundle : VersionedTransaction[] = [];
                 blockhash_list.map((blockhash) => {
                     const messageV0 = new TransactionMessage({
                         payerKey: payer.publicKey,
                         recentBlockhash: blockhash,
-                        instructions: ixs,
+                        instructions: ixsRpc,
                     }).compileToV0Message(addressLookupTableAccounts);
                     const transaction = new VersionedTransaction(messageV0);
                     transaction.sign([payer]);
-                    txs.push(transaction);
+                    txsRpc.push(transaction);
+                });
+                blockhash_list.map((blockhash) => {
+                    const messageV0 = new TransactionMessage({
+                        payerKey: payer.publicKey,
+                        recentBlockhash: blockhash,
+                        instructions: ixsBundle,
+                    }).compileToV0Message(addressLookupTableAccounts);
+                    const transaction = new VersionedTransaction(messageV0);
+                    transaction.sign([payer]);
+                    txsBundle.push(transaction);
                 });
 
                 // 提交交易
                 try {
                     let promises : Promise<void>[] = [];
-                    if (ifsendTxToBundle) {
-                        for (let i=0; i<txs.length; i++) {
-                            promises.push(sendTxToBundle(txs[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                    if (ifsendTxToBothRpcAndBundle) {
+                        for (let i=0; i<txsBundle.length; i++) {
+                            promises.push(sendTxToBundle(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                        }
+                        for (let i=0; i<txsRpc.length; i++) {
+                            promises.push(sendTxToRpc(txsRpc[i],sendTxCons[i%sendTxCons.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
                         }
                         await Promise.all(promises);
                     } else {
-                        for (let i=0; i<txs.length; i++) {
-                            promises.push(sendTxToRpc(txs[i],sendTxCons[i%sendTxCons.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                        if (ifsendTxToBundle) {
+                            for (let i=0; i<txsBundle.length; i++) {
+                                promises.push(sendTxToBundle(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                            }
+                            await Promise.all(promises);
+                        } else {
+                            for (let i=0; i<txsRpc.length; i++) {
+                                promises.push(sendTxToRpc(txsRpc[i],sendTxCons[i%sendTxCons.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                            }
+                            await Promise.all(promises);
                         }
-                        await Promise.all(promises);
                     }
                 } catch (error) {
                     logger.error(`${pair1.symbol}-${pair2.symbol} submit tx error: ${error}`);

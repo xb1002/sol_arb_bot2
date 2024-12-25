@@ -4,21 +4,22 @@ export const normalConfig = { // 一般配置
     loggerLevel: "debug", // 日志级别
     commitment: "confirmed" as Commitment, // 交易确认级别
     waitTimePerRound: 0.35 * 1000, // 每一轮间隔时间
-    txMutilpler : 3, // 当发现套利机会时提出交易的次数
+    txMutilpler : 2, // 当发现套利机会时提出交易的次数
     maxAddressLookupTableNum: 200, // 保存最大地址查找表数量
     directRoute: true, // 是否直接路由
-    tradePercentageOfBalance: 0.3, // 交易百分比
+    tradePercentageOfBalance: 0.9, // 交易百分比
     maxTolerantSlotNum: 3, // 最大可接受的报价contextSlot与latestSlot的差距
     maxTolerantSlotDiffNum: 3, // 最大可接受的两个报价的contextSlot的差距
     partformFeeBps: 20, // 平台手续费,单位为0.01%
     minProfitBps: 10, // 最小利润，单位为0.01%
     minJitoTip: 0.0001 * LAMPORTS_PER_SOL, // 最小jito tip
-    jitoFeePercentage: 0.1, // jito手续费百分比
+    jitoFeePercentage: 0.2, // jito手续费百分比
     computeUnitBudget: 199999, // 计算单元预算
 };
 
 export const submitTxMethodConfig = { // 提交交易方法配置
     ifsendTxToBundle: true, // 是否将交易发送到bundle
+    ifsendTxToBothRpcAndBundle: true, // 是否将交易同时发送到rpc和bundle,如果为true,则不管ifsendTxToBundle是否为true,都会发送到bundle
 };
 
 export const judgementConfig = { // 判断条件配置
