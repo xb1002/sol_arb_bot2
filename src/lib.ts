@@ -107,11 +107,13 @@ export async function getPriorityFee(RPC: string, account?: string) : Promise<pr
 // 发送交易到rpc
 export async function sendTxToRpc(tx:VersionedTransaction,connection:Connection,logger:Logger,name:string) {
     try {
+        let start = new Date().getTime();
         await connection.sendRawTransaction(tx.serialize(), {
             skipPreflight: true,
             maxRetries: 0
         }).then((resp) => {
             logger.info(`${name} sendTxToRpc: ${resp}`)
+            logger.info(`${name} sendTxToRpc time cost: ${new Date().getTime() - start}ms`)
         })
     } catch (err) {
         logger.error(`${name} sendTxToRpc error: ${err}`)
@@ -121,6 +123,7 @@ export async function sendTxToRpc(tx:VersionedTransaction,connection:Connection,
 // 发送交易到bundle
 export async function sendTxToBundle(tx:VersionedTransaction,bundle_api:string,logger:Logger,name:string) {
     try {
+        let start = new Date().getTime();
         const serializedTransaction = tx.serialize();
         const base58Transaction = bs58.encode(serializedTransaction);
         const bundle = {
@@ -135,6 +138,7 @@ export async function sendTxToBundle(tx:VersionedTransaction,bundle_api:string,l
             }
         }).then((resp) => {
             logger.info(`${name} sendTxToBundle: ${resp.data.result}`)
+            logger.info(`${name} sendTxToBundle time cost: ${new Date().getTime() - start}ms`)
         })
     } catch (err) {
         logger.error(`${name} sendTxToBundle error: ${err}`)
@@ -144,6 +148,7 @@ export async function sendTxToBundle(tx:VersionedTransaction,bundle_api:string,l
 // 发送交易到jito
 export async function sendTxToJito(tx:VersionedTransaction,bundle_api:string,logger:Logger,name:string) {
     try {
+        let start = new Date().getTime();
         const serializedTransaction = tx.serialize();
         const base58Transaction = bs58.encode(serializedTransaction);
         const params = {
@@ -158,6 +163,7 @@ export async function sendTxToJito(tx:VersionedTransaction,bundle_api:string,log
             }
         }).then((resp) => {
             logger.info(`${name} sendTxToJito: ${resp.data.result}`)
+            logger.info(`${name} sendTxToJito time cost: ${new Date().getTime() - start}ms`)
         }).catch((err) => {
             logger.error(`${name} sendTxToJito error: ${err}`)
         })
