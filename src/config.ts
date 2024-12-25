@@ -18,8 +18,9 @@ export const normalConfig = { // 一般配置
 };
 
 export const submitTxMethodConfig = { // 提交交易方法配置
-    ifsendTxToBundle: true, // 是否将交易发送到bundle
-    ifsendTxToBothRpcAndBundle: true, // 是否将交易同时发送到rpc和bundle,如果为true,则不管ifsendTxToBundle是否为true,都会发送到bundle
+    ifsendTxByJito: true, // 是否通过jito发送交易
+    sendMethodByJito: "Jito", // 发送交易的方法,有Jito和Bundle两种
+    ifsendTxToBothRpcAndJito: false, // 是否将交易同时发送到rpc和bundle,如果为true,ifsendTxToByJito必须为true
 };
 
 export const judgementConfig = { // 判断条件配置

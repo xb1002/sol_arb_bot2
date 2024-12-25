@@ -279,14 +279,17 @@ let partformFeeBps = config.normalConfig.partformFeeBps / 10000;
 let minJitoTip = config.normalConfig.minJitoTip;
 let trade_main = mainBalance * config.normalConfig.tradePercentageOfBalance;
 let jitoFeePercentage = config.normalConfig.jitoFeePercentage;
-let ifsendTxToBundle = config.submitTxMethodConfig.ifsendTxToBundle;
-let ifsendTxToBothRpcAndBundle = config.submitTxMethodConfig.ifsendTxToBothRpcAndBundle;
+let ifsendTxToBothRpcAndJito= config.submitTxMethodConfig.ifsendTxToBothRpcAndJito;
+let ifsendTxByJito = config.submitTxMethodConfig.ifsendTxByJito;
 const JitoTipAccounts = config.JitoTipAccounts;
 const BundleApis = config.BundleApis;
 
 const instructionFormat = lib.instructionFormat;
 const sendTxToRpc = lib.sendTxToRpc;
 const sendTxToBundle = lib.sendTxToBundle;
+const sendTxToJito = lib.sendTxToJito;
+
+const sendMethodByJito = (config.submitTxMethodConfig.sendMethodByJito === "Jito") ? sendTxToJito : sendTxToBundle;
 
 interface monitorParams {
     pair1:config.TradePair,
@@ -365,8 +368,8 @@ async function monitor(params:monitorParams) {
             // swap参数
             let mergedQuoteResp = quote0Resp as QuoteResponse;
             mergedQuoteResp.outputMint = (quote1Resp as QuoteResponse).outputMint;
-            mergedQuoteResp.outAmount = ifsendTxToBundle ? (String(pair1_to_pair2.amount+jitoTip)) : (String(pair1_to_pair2.amount));
-            mergedQuoteResp.otherAmountThreshold = ifsendTxToBundle ? (String(pair1_to_pair2.amount+jitoTip)) : (String(pair1_to_pair2.amount));
+            mergedQuoteResp.outAmount = ifsendTxByJito ? (String(pair1_to_pair2.amount+jitoTip)) : (String(pair1_to_pair2.amount));
+            mergedQuoteResp.otherAmountThreshold = ifsendTxByJito ? (String(pair1_to_pair2.amount+jitoTip)) : (String(pair1_to_pair2.amount));
             mergedQuoteResp.priceImpactPct = String(0);
             mergedQuoteResp.routePlan = mergedQuoteResp.routePlan.concat((quote1Resp as QuoteResponse).routePlan);
             let swapData : SwapRequest = {
@@ -414,7 +417,7 @@ async function monitor(params:monitorParams) {
                 ixsRpc = cu_ixs.concat(ixsRpc);
                 ixsBundle = cu_ixs.concat(ixsBundle);
 
-                if (ifsendTxToBundle) {
+                if (ifsendTxByJito) {
                     // 5. 添加jito tip
                     const tipInstruction = SystemProgram.transfer({
                         fromPubkey: payer.publicKey,
@@ -465,18 +468,18 @@ async function monitor(params:monitorParams) {
                 // 提交交易
                 try {
                     let promises : Promise<void>[] = [];
-                    if (ifsendTxToBothRpcAndBundle) {
+                    if (ifsendTxToBothRpcAndJito) {
                         for (let i=0; i<txsBundle.length; i++) {
-                            promises.push(sendTxToBundle(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                            promises.push(sendMethodByJito(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
                         }
                         for (let i=0; i<txsRpc.length; i++) {
                             promises.push(sendTxToRpc(txsRpc[i],sendTxCons[i%sendTxCons.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
                         }
                         await Promise.all(promises);
                     } else {
-                        if (ifsendTxToBundle) {
+                        if (ifsendTxByJito) {
                             for (let i=0; i<txsBundle.length; i++) {
-                                promises.push(sendTxToBundle(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
+                                promises.push(sendMethodByJito(txsBundle[i],BundleApis[i%BundleApis.length],tradeLogger,`${pair1.symbol}-${pair2.symbol}`));
                             }
                             await Promise.all(promises);
                         } else {

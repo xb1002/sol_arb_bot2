@@ -141,6 +141,30 @@ export async function sendTxToBundle(tx:VersionedTransaction,bundle_api:string,l
     }
 }
 
+// 发送交易到jito
+export async function sendTxToJito(tx:VersionedTransaction,bundle_api:string,logger:Logger,name:string) {
+    try {
+        const serializedTransaction = tx.serialize();
+        const base58Transaction = bs58.encode(serializedTransaction);
+        const params = {
+            jsonrpc: "2.0",
+            id: 1,
+            method: "sendTransaction",
+            params: [base58Transaction]
+        };
+        axios.post(new URL("api/v1/transactions",bundle_api).href, params, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then((resp) => {
+            logger.info(`${name} sendTxToJito: ${resp.data.result}`)
+        }).catch((err) => {
+            logger.error(`${name} sendTxToJito error: ${err}`)
+        })
+    } catch (err) {
+        logger.error(`${name} sendTxToJito error: ${err}`)
+    }
+}
 
 // 从gmgnai获取交易对
 interface getPairsParams {
