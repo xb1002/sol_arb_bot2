@@ -532,9 +532,9 @@ async function main(num:number) {
         con:con,
         jupCon:jupCon
     })
-    console.log(`waiting for ${waitTime}ms...`)
+    if (config.normalConfig.showWaitAndNextRound){console.log(`waiting for ${waitTime}ms...`)};
     await wait(waitTime);
-    console.log('start next round...')
+    if (config.normalConfig.showWaitAndNextRound){console.log('start next round...')}
     main((num+1)%pair2s.length);
 }
 

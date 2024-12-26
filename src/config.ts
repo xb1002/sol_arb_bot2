@@ -3,6 +3,7 @@ import { LAMPORTS_PER_SOL,Commitment } from "@solana/web3.js";
 export const normalConfig = { // 一般配置
     loggerLevel: "debug", // 日志级别
     commitment: "confirmed" as Commitment, // 交易确认级别
+    showWaitAndNextRound: false, // 是否显示等待和下一轮
     waitTimePerRound: 0.35 * 1000, // 每一轮间隔时间
     txMutilpler : 2, // 当发现套利机会时提出交易的次数
     maxAddressLookupTableNum: 200, // 保存最大地址查找表数量
@@ -10,8 +11,8 @@ export const normalConfig = { // 一般配置
     tradePercentageOfBalance: 0.98, // 交易百分比
     maxTolerantSlotNum: 3, // 最大可接受的报价contextSlot与latestSlot的差距
     maxTolerantSlotDiffNum: 3, // 最大可接受的两个报价的contextSlot的差距
-    partformFeeBps: 20, // 平台手续费,单位为0.01%
-    minProfitBps: 10, // 最小利润，单位为0.01%
+    partformFeeBps: 0, // 平台手续费,单位为0.01%
+    minProfitBps: 20, // 最小利润，单位为0.01%
     minJitoTip: 0.0001 * LAMPORTS_PER_SOL, // 最小jito tip
     jitoFeePercentage: 0.2, // jito手续费百分比
     computeUnitBudget: 199999, // 计算单元预算
@@ -19,8 +20,8 @@ export const normalConfig = { // 一般配置
 
 export const submitTxMethodConfig = { // 提交交易方法配置
     ifsendTxByJito: true, // 是否通过jito发送交易
-    sendMethodByJito: "Jito", // 发送交易的方法,有Jito和Bundle两种
-    ifsendTxToBothRpcAndJito: false, // 是否将交易同时发送到rpc和bundle,如果为true,ifsendTxToByJito必须为true
+    sendMethodByJito: "Bundle", // 发送交易的方法,有Jito和Bundle两种
+    ifsendTxToBothRpcAndJito: true, // 是否将交易同时发送到rpc和bundle,如果为true,ifsendTxToByJito必须为true
 };
 
 export const judgementConfig = { // 判断条件配置
@@ -30,9 +31,9 @@ export const judgementConfig = { // 判断条件配置
 };
 
 export const priorityFeeConfig = { // 每个优先级的最大费用，单位为microLamport
-    maxFeeOfExtreme: 199999,
-    maxFeeOfHigh: 99999,
-    maxFeeOfMedium: 66666,
+    maxFeeOfExtreme: 45678,
+    maxFeeOfHigh: 34567,
+    maxFeeOfMedium: 23456,
     maxFeeOfLow: 12345
 };
 export const priorityFeeLevelThreshold = { // 优先级阈值
