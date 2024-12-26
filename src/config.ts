@@ -68,10 +68,10 @@ export const JitoTipAccounts = [
 ]
 
 export const BundleApis = [
+    "https://frankfurt.mainnet.block-engine.jito.wtf",
     "https://mainnet.block-engine.jito.wtf",
     "https://ny.mainnet.block-engine.jito.wtf",
     "https://tokyo.mainnet.block-engine.jito.wtf",
-    "https://frankfurt.mainnet.block-engine.jito.wtf"
 ]
 
 export interface TradePair {
@@ -81,7 +81,7 @@ export interface TradePair {
 export const trade_pairs = {
     pair1: {symbol: "wsol", mint: "So11111111111111111111111111111111111111112"},
     pair2s: [
-
+        
     ] as TradePair[], //如果添加，则不会自动更新币对
     timeSpan: "24h", //只能是 1m 5m 1h 6h 24h
     startNum: 0, // 从第几个币对开始
